@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import MinMaxScaler
@@ -39,23 +40,14 @@ scaler = MinMaxScaler()
 train_x = scaler.fit_transform(train_x)
 test_x = scaler.transform(test_x)
 
-# Visualizing the data
-'''
-x = x[:,0]
-plt.scatter(x, y)
-plt.show()
-'''
 # Checking the cross_val_score of the model
 
 model = RandomForestClassifier(n_estimators=100 , class_weight = 'balanced' ,random_state=42)
 cv_score = cross_val_score(model , x , y , cv=5 , scoring="accuracy")
-print(f'''\n
 
-=================================== Model clarifications ========================================
+st.subheader("===== Model clarifications ======")
 
-Cross value score : {cv_score * 100}
-
-''')
+st.write(f"Cross validation score : {cv_score * 100}")
 
 # Training the model
 
@@ -65,125 +57,53 @@ model.fit(train_x, train_y)
 
 preds = model.predict(test_x)
 
-print(f'''Confusion matrix : " 
-
+st.write(f'''Confusion matrix : " 
  {confusion_matrix(preds , test_y)}
- 
  ''')
-print(f'''Classification_report : 
 
- {classification_report(preds , test_y)}
- 
+report = classification_report(preds , test_y)
+
+st.write(f'''Classification_report : 
+
+ {report}
+
  ''')
-print(f'''Accuracy :
-
+st.write(f'''Accuracy :
  {int(accuracy_score(preds , test_y) * 100)} "%"
- 
  ''')
 
 
-def take_data():
-    f1 = input("What is your gender (M/F) : ").lower()
-    if f1 == 'm':
-        f1 = 0
-    else :
-        f1 =1
 
-    age = input("Enter your age : ")
+st.subheader("===== Patient survey form =====")
 
-    f2 = input("Do you smoke Y/N : ").lower()
-    if f2 == 'y':
-        f2=1
-    else:
-        f2=0
+f1 = st.selectbox("What is your gender",("Male" , "Female"))
+f1 = 0 if f1 == "Male" else 1
 
-    f3 = input("Do you have yellow fingers Y/N : ").lower()
-    if f3 == 'y':
-        f3=1
-    else:
-        f3=0
+age = st.number_input("Enter your age : " , min_value=0 , max_value=120 , value=30)
 
-    f4 = input("Do you have anxiety Y/N : ").lower()
-    if f4 == 'y':
-        f4=1
-    else:
-        f4=0
+f2 = 1 if st.checkbox("Do you smoke?") else 0
+f3 = 1 if st.checkbox("Do you have yellow fingers?") else 0
+f4 = 1 if st.checkbox("Do you have anxiety?") else 0
+f5 = 1 if st.checkbox("Do you experience peer pressure?") else 0
+f6 = 1 if st.checkbox("Do you have a chronic disease?") else 0
+f7 = 1 if st.checkbox("Do you experience fatigue?") else 0
+f8 = 1 if st.checkbox("Do you have allergies?") else 0
+f9 = 1 if st.checkbox("Do you experience wheezing?") else 0
+f10 = 1 if st.checkbox("Do you consume alcohol?") else 0    
+f11 = 1 if st.checkbox("Do you have coughing?") else 0
+f12 = 1 if st.checkbox("Do you experience shortness of breath?") else 0
+f13 = 1 if st.checkbox("Do you have swallowing difficulty?") else 0
+f14 = 1 if st.checkbox("Do you have chest pain?") else 0
 
-    f5 = input("Do you have peer pressure Y/N : ").lower()
-    if f5 == 'y':
-        f5=1
-    else:
-        f5=0
+classes = {0:"No , you don't have lung cancer." , 1:"Yes , model predicted that you have risk of lung cancer."}
 
-    f6 = input("Do you have chronic disease Y/N : ").lower()
-    if f6 == 'y':
-        f6=1
-    else:
-        f6=0
-
-    f7 = input("Do you have fatigue Y/N : ").lower()
-    if f7 == 'y':
-        f7=1
-    else:
-        f7=0
-
-    f8 = input("Do you have allergy Y/N : ").lower()
-    if f8 == 'y':
-        f8=1
-    else:
-        f8=0
-
-    f9 = input("Do have wheezing Y/N : ").lower()
-    if f9 == 'y':
-        f9=1
-    else:
-        f9=0
-
-    f10 = input("Do you consume alcahol Y/N : ").lower()
-    if f10 == 'y':
-        f10=1
-    else:
-        f10=0
-
-    f11 = input("Do you have coughing Y/N : ").lower()
-    if f11 == 'y':
-        f11=1
-    else:
-        f11=0
-
-    f12 = input("Do you have shortness of breath Y/N : ").lower()
-    if f12 == 'y':
-        f12=1
-    else:
-        f12=0
-
-    f13 = input("Do you have swallowing difficulty Y/N : ").lower()
-    if f13 == 'y':
-        f13=1
-    else:
-        f13=0
-
-    f14 = input("At last , do you have cheast pain Y/N : ").lower()
-    if f14 == 'y':
-        f14=1
-    else:
-        f14=0
-
+if st.button("Predict"):
     DSet = np.array([[f1, age ,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14]] , dtype=float)
     DSet = scaler.fit_transform(DSet)
 
-    return DSet
+    pred = model.predict(DSet)
 
-print("==================================== Evaluating the model ================================================")
-
-edset = take_data()
-pred = model.predict(edset)
-
-classes = {0:"No , you don't have lung cancer." , 1:"Yes , you have lung cancer."}
-
-print(f'''\n
-features = {edset}
-prediction : {classes.get(int(pred[0]))}
-
-Disclaimer : Not every prediction is accurate . For serious issue please consult a real doctor this model is only educational purposes.
-''')
+    st.markdown("---")
+    st.subheader("Results")
+    st.write(f"**Prediction:** {classes.get(int(pred[0]))}")
+    st.warning("Disclaimer: Not every prediction is accurate. For serious health issues, please consult a real doctor.")
