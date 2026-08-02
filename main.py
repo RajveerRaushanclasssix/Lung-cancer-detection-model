@@ -3,10 +3,10 @@ import numpy as np
 import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix , classification_report , accuracy_score
-
 
 dataset = pd.read_csv("survey lung cancer.csv")
 dataset.columns = dataset.columns.str.strip()
@@ -35,7 +35,7 @@ y = np.array(dataset["LUNG_CANCER"] , dtype=float)
 x = np.array(dataset.drop(columns=["LUNG_CANCER"]), dtype=float)
 
 train_x , test_x , train_y , test_y = train_test_split(x, y, test_size=0.2, random_state=42)
-scaler = StandardScalerScaler()
+scaler = MinMaxScaler()
 
 train_x = scaler.fit_transform(train_x)
 test_x = scaler.transform(test_x)
@@ -101,9 +101,12 @@ if st.button("Predict"):
     DSet = np.array([[f1, age ,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14]] , dtype=float)
     DSet = scaler.transform(DSet)
 
-    pred = model.predict(DSet)
+    risk_prob = model.predict_proba(DSet)[0][1]
 
     st.markdown("---")
     st.subheader("Results")
-    st.write(f"**Prediction:** {classes.get(int(pred[0]))}")
+    if risk_prob >= 0.35:
+        st.error("Yes, model predicted that you have a risk of lung cancer.")
+    else:
+        st.success("No, model predicted that you don't have lung cancer.")
     st.warning("Disclaimer: Not every prediction is accurate. For serious health issues, please consult a real doctor.")
