@@ -7,6 +7,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix , classification_report , accuracy_score
 
+@st.cache_resource
+
 dataset = pd.read_csv("survey lung cancer.csv")
 dataset.columns = dataset.columns.str.strip()
 
@@ -98,7 +100,7 @@ classes = {0:"No , you don't have lung cancer." , 1:"Yes , model predicted that 
 
 if st.button("Predict"):
     DSet = np.array([[f1, age ,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14]] , dtype=float)
-    DSet = scaler.fit_transform(DSet)
+    DSet = scaler.transform(DSet)
 
     pred = model.predict(DSet)
 
