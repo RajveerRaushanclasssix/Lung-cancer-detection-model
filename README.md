@@ -1,11 +1,25 @@
-This program is for educational purposes only.
+# 🫁 Lung Cancer Prediction App
 
-How to us it :
+An interactive machine learning web application built with **Python**, **Scikit-Learn**, and **Streamlit** to predict the risk of lung cancer based on patient survey responses.
 
-Run the main.py and don't forget to add the dataset or it will not work. After running it you
-will see the specifications of the model like accuracy score , cross validation score and more
-then in the Evaluation Block  it will ask simple questions and and the side of there will be
-an option like Y/N it is not case sensitive but please only answer from the given options.
+---
 
-Thank you,
-                                                                 - Rajveer Raushan (Developer) :)
+## 🚀 Features
+- **Machine Learning Model:** Uses a `RandomForestClassifier` with balanced class weights to handle dataset imbalances.
+- **Data Scaling:** Automatically scales numerical features (like age) using `MinMaxScaler`.
+- **Interactive UI:** Built with Streamlit, replacing traditional terminal text inputs with user-friendly checkboxes and number selectors to prevent user input errors.
+- **Model Evaluation:** Displays the Cross-Validation Score, Confusion Matrix, Classification Report, and Accuracy Score right in the app.
+
+---
+
+## 🛠️ Prerequisites & Installation
+
+Make sure you have Python installed, then clone the repository and install the required dependencies:
+
+```bash
+# Clone the repository
+git clone [https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git)
+cd YOUR_REPOSITORY_NAME
+
+# Install required libraries
+pip install pandas numpy scikit-learn streamlit matplotlib
