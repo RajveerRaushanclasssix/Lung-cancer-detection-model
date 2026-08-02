@@ -18,8 +18,8 @@ Make sure you have Python installed, then clone the repository and install the r
 
 ```bash
 # Clone the repository
-git clone [https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git)
-cd YOUR_REPOSITORY_NAME
+git clone [https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git](https://github.com/RajveerRaushanclassix/Lung-cancer-prediction-model.git)
+cd Lung-cancer-prediction-model
 
 # Install required libraries
 pip install pandas numpy scikit-learn streamlit matplotlib
