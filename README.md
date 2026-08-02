@@ -29,7 +29,7 @@ pip install numpy pandas scikit-learn streamlit
 ```
 ### 3. Run the main.py file
 ```bash
-streamlit run man.py
+streamlit run main.py
 ```
 
 
