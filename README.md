@@ -20,5 +20,5 @@ Make sure you have Python installed on your system.
 Open your terminal or command prompt and run:
 
 ```bash
-git clone [https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git](https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git)
-cd Lung-cancer-prediction-model
+git clone https://github.com/RajveerRaushanclasssix/Lung-cancer-detection-model
+cd Lung-cancer-detection-model
