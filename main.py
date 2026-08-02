@@ -7,7 +7,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix , classification_report , accuracy_score
 
-@st.cache_resource
 
 dataset = pd.read_csv("survey lung cancer.csv")
 dataset.columns = dataset.columns.str.strip()
