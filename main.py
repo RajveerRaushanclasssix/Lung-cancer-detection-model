@@ -1,85 +1,93 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
+
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix , classification_report , accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 
-dataset = pd.read_csv("survey lung cancer.csv")
-dataset.columns = dataset.columns.str.strip()
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline as ImbPipeline
 
-# Converting the categorical data to numerical data
+st.set_page_config(page_title="Lung Cancer Prediction", layout="wide")
 
-dataset["GENDER"] = np.where(dataset["GENDER"] =="M" , 0 ,1)
-dataset["SMOKING"] = np.where(dataset["SMOKING"] == 2 , 1  , 0)
-dataset["YELLOW_FINGERS"] = np.where(dataset["YELLOW_FINGERS"] == 2 , 1  , 0)
-dataset["ANXIETY"] = np.where(dataset["ANXIETY"] == 2 , 1  , 0)
-dataset["PEER_PRESSURE"] = np.where(dataset["PEER_PRESSURE"] == 2 , 1  , 0)
-dataset["CHRONIC DISEASE"] = np.where(dataset["CHRONIC DISEASE"] == 2 , 1  , 0)
-dataset["FATIGUE"] = np.where(dataset["FATIGUE"] == 2 , 1  , 0)
-dataset["ALLERGY"] = np.where(dataset["ALLERGY"] == 2 , 1  , 0)
-dataset["WHEEZING"] = np.where(dataset["WHEEZING"] == 2 , 1  , 0)
-dataset["ALCOHOL CONSUMING"] = np.where(dataset["ALCOHOL CONSUMING"] == 2 , 1  , 0)
-dataset["COUGHING"] = np.where(dataset["COUGHING"] == 2 , 1  , 0)
-dataset["SHORTNESS OF BREATH"] = np.where(dataset["SHORTNESS OF BREATH"] == 2 , 1  , 0)
-dataset["SWALLOWING DIFFICULTY"] = np.where(dataset["SWALLOWING DIFFICULTY"] == 2 , 1  , 0)
-dataset["CHEST PAIN"] = np.where(dataset["CHEST PAIN"] == 2 , 1  , 0)
-dataset["LUNG_CANCER"] = np.where(dataset["LUNG_CANCER"] == "YES" , 1  , 0)
+# 1. Load & Preprocess Data (Cached to run only once)
+@st.cache_data
+def load_data():
+    dataset = pd.read_csv("survey lung cancer.csv")
+    dataset.columns = dataset.columns.str.strip()
 
-# Splitting the dataset into training and testing sets and scaling the data
+    dataset["GENDER"] = np.where(dataset["GENDER"] == "M", 0, 1)
 
-y = np.array(dataset["LUNG_CANCER"] , dtype=float)
-x = np.array(dataset.drop(columns=["LUNG_CANCER"]), dtype=float)
+    binary_cols = [
+        "SMOKING", "YELLOW_FINGERS", "ANXIETY", "PEER_PRESSURE",
+        "CHRONIC DISEASE", "FATIGUE", "ALLERGY", "WHEEZING",
+        "ALCOHOL CONSUMING", "COUGHING", "SHORTNESS OF BREATH",
+        "SWALLOWING DIFFICULTY", "CHEST PAIN"
+    ]
+    for col in binary_cols:
+        dataset[col] = np.where(dataset[col] == 2, 1, 0)
 
-train_x , test_x , train_y , test_y = train_test_split(x, y, test_size=0.2, random_state=42)
+    dataset["LUNG_CANCER"] = np.where(dataset["LUNG_CANCER"] == "YES", 1, 0)
+    return dataset
+
+dataset = load_data()
+
+y = dataset["LUNG_CANCER"].values
+x = dataset.drop(columns=["LUNG_CANCER"]).values
+
+# 2. Train / Test Split
+train_x, test_x, train_y, test_y = train_test_split(
+    x, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# 3. Fit Pipeline Properly (Scale FIRST, then SMOTE)
 scaler = MinMaxScaler()
+train_x_scaled = scaler.fit_transform(train_x)
+test_x_scaled = scaler.transform(test_x)
 
-train_x = scaler.fit_transform(train_x)
-test_x = scaler.transform(test_x)
+smote = SMOTE(random_state=42)
+x_train_resampled, y_train_resampled = smote.fit_resample(train_x_scaled, train_y)
 
-# Checking the cross_val_score of the model
+# Model Training without duplicate class weighting
+model =LogisticRegression(class_weight="balanced")
+model.fit(x_train_resampled, y_train_resampled)
 
-model = RandomForestClassifier(n_estimators=100 , class_weight = 'balanced' ,random_state=42)
-cv_score = cross_val_score(model , x , y , cv=5 , scoring="accuracy")
+# 4. Correct Out-of-Fold Cross Validation
+cv_pipeline = ImbPipeline([
+    ('scaler', MinMaxScaler()),
+    ('smote', SMOTE(random_state=42)),
+    ('model', LogisticRegression(class_weight='balanced',random_state=42))
+])
 
-st.subheader("===== Model clarifications ======")
+skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+cv_scores = cross_val_score(cv_pipeline, x, y, cv=skf, scoring="accuracy")
 
-st.write(f"Cross validation score : {cv_score * 100}")
+# 5. Model Evaluation (FIXED: y_true first, then y_pred)
+preds = model.predict(test_x_scaled)
 
-# Training the model
+st.subheader("===== Model Clarifications ======")
 
-model.fit(train_x, train_y)
+st.write(f"Cross validation score : {np.round(cv_scores * 100, 2)}")
 
-# Testing the model
+st.write("Confusion Matrix:")
+st.code(confusion_matrix(test_y, preds))  # FIXED ORDER
 
-preds = model.predict(test_x)
+report = classification_report(test_y, preds)  # FIXED ORDER
+st.write("Classification Report:")
+st.code(report)
 
-st.write(f'''Confusion matrix : " 
- {confusion_matrix(preds , test_y)}
- ''')
+acc = accuracy_score(test_y, preds) * 100  # FIXED ORDER
+st.write(f"Accuracy : {acc:.2f}%")
 
-report = classification_report(preds , test_y)
+# 6. Form Interface
+st.subheader("===== Patient Survey Form =====")
 
-st.write(f'''Classification_report : 
-
- {report}
-
- ''')
-st.write(f'''Accuracy :
- {int(accuracy_score(preds , test_y) * 100)} "%"
- ''')
-
-
-
-st.subheader("===== Patient survey form =====")
-
-f1 = st.selectbox("What is your gender",("Male" , "Female"))
+f1 = st.selectbox("What is your gender", ("Male", "Female"))
 f1 = 0 if f1 == "Male" else 1
 
-age = st.number_input("Enter your age : " , min_value=0 , max_value=120 , value=30)
+age = st.number_input("Enter your age : ", min_value=0, max_value=120, value=30)
 
 f2 = 1 if st.checkbox("Do you smoke?") else 0
 f3 = 1 if st.checkbox("Do you have yellow fingers?") else 0
@@ -95,18 +103,16 @@ f12 = 1 if st.checkbox("Do you experience shortness of breath?") else 0
 f13 = 1 if st.checkbox("Do you have swallowing difficulty?") else 0
 f14 = 1 if st.checkbox("Do you have chest pain?") else 0
 
-classes = {0:"No , you don't have lung cancer." , 1:"Yes , model predicted that you have risk of lung cancer."}
-
 if st.button("Predict"):
-    DSet = np.array([[f1, age ,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14]] , dtype=float)
-    DSet = scaler.transform(DSet)
+    DSet = np.array([[f1, age, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14]], dtype=float)
+    DSet_scaled = scaler.transform(DSet)
 
-    risk_prob = model.predict_proba(DSet)[0][1]
+    risk_prob = model.predict_proba(DSet_scaled)[0][1]
 
     st.markdown("---")
     st.subheader("Results")
     if risk_prob >= 0.35:
-        st.error("Yes, model predicted that you have a risk of lung cancer.")
+        st.error(f"Yes, model predicted that you have a risk of lung cancer. (Probability: {risk_prob:.1%})")
     else:
-        st.success("No, model predicted that you don't have lung cancer.")
+        st.success(f"No, model predicted that you don't have lung cancer. (Probability: {risk_prob:.1%})")
     st.warning("Disclaimer: Not every prediction is accurate. For serious health issues, please consult a real doctor.")
