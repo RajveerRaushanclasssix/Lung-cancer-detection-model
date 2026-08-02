@@ -22,3 +22,14 @@ Open your terminal or command prompt and run:
 ```bash
 git clone https://github.com/RajveerRaushanclasssix/Lung-cancer-detection-model
 cd Lung-cancer-detection-model
+```
+### 2. Install the prequisits
+```bash
+pip install numpy pandas scikit-learn streamlit
+```
+### 3. Run the main.py file
+```bash
+streamlit run man.py
+```
+
+
