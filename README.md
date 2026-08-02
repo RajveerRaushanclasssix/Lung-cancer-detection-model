@@ -18,7 +18,7 @@ Make sure you have Python installed, then clone the repository and install the r
 
 ```bash
 # Clone the repository
-git clone [https://github.com/RajveerRaushanclasssix/Lung-cancer-detection-model.git](https://github.com/RajveerRaushanclassix/Lung-cancer-prediction-model.git)
+git clone https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git
 cd Lung-cancer-detection-model
 
 # Install required libraries
