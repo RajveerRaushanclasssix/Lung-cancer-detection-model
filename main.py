@@ -3,7 +3,7 @@ import numpy as np
 import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix , classification_report , accuracy_score
 
@@ -35,7 +35,7 @@ y = np.array(dataset["LUNG_CANCER"] , dtype=float)
 x = np.array(dataset.drop(columns=["LUNG_CANCER"]), dtype=float)
 
 train_x , test_x , train_y , test_y = train_test_split(x, y, test_size=0.2, random_state=42)
-scaler = MinMaxScaler()
+scaler = StandardScalerScaler()
 
 train_x = scaler.fit_transform(train_x)
 test_x = scaler.transform(test_x)
