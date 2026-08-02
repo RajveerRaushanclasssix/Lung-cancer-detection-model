@@ -25,7 +25,7 @@ cd Lung-cancer-detection-model
 ```
 ### 2. Install the prequisits
 ```bash
-pip install numpy pandas scikit-learn streamlit
+pip install numpy pandas scikit-learn streamlit imbalanced-learn
 ```
 ### 3. Run the main.py file
 ```bash
