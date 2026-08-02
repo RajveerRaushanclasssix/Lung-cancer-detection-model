@@ -14,12 +14,11 @@ An interactive machine learning web application built with **Python**, **Scikit-
 
 ## 🛠️ Prerequisites & Installation
 
-Make sure you have Python installed, then clone the repository and install the required dependencies:
+Make sure you have Python installed on your system.
+
+### 1. Clone the Repository
+Open your terminal or command prompt and run:
 
 ```bash
-# Clone the repository
-git clone https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git
-cd Lung-cancer-detection-model
-
-# Install required libraries
-pip install pandas numpy scikit-learn streamlit matplotlib
+git clone [https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git](https://github.com/RajveerRaushanclasssix/Lung-cancer-prediction-model.git)
+cd Lung-cancer-prediction-model
