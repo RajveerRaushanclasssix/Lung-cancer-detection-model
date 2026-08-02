@@ -4,7 +4,6 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix , classification_report , accuracy_score
 
