@@ -32,53 +32,65 @@ def load_data():
     dataset["LUNG_CANCER"] = np.where(dataset["LUNG_CANCER"] == "YES", 1, 0)
     return dataset
 
-dataset = load_data()
+@st.cache_resource
+def load_eval_model():
 
-y = dataset["LUNG_CANCER"].values
-x = dataset.drop(columns=["LUNG_CANCER"]).values
+    dataset = load_data()
 
-# 2. Train / Test Split
-train_x, test_x, train_y, test_y = train_test_split(
-    x, y, test_size=0.2, random_state=42, stratify=y
-)
+    y = dataset["LUNG_CANCER"].values
+    x = dataset.drop(columns=["LUNG_CANCER"]).values
 
-# 3. Fit Pipeline Properly (Scale FIRST, then SMOTE)
-scaler = MinMaxScaler()
-train_x_scaled = scaler.fit_transform(train_x)
-test_x_scaled = scaler.transform(test_x)
+    # 2. Train / Test Split
+    train_x, test_x, train_y, test_y = train_test_split(
+        x, y, test_size=0.2, random_state=42, stratify=y
+    )
 
-smote = SMOTE(random_state=42)
-x_train_resampled, y_train_resampled = smote.fit_resample(train_x_scaled, train_y)
+    # 3. Fit Pipeline Properly
+    scaler = MinMaxScaler()
+    train_x_scaled = scaler.fit_transform(train_x)
+    test_x_scaled = scaler.transform(test_x)
 
-# Model Training without duplicate class weighting
-model =LogisticRegression(class_weight="balanced")
-model.fit(x_train_resampled, y_train_resampled)
+    smote = SMOTE(random_state=42)
+    x_train_resampled, y_train_resampled = smote.fit_resample(train_x_scaled, train_y)
 
-# 4. Correct Out-of-Fold Cross Validation
-cv_pipeline = ImbPipeline([
-    ('scaler', MinMaxScaler()),
-    ('smote', SMOTE(random_state=42)),
-    ('model', LogisticRegression(class_weight='balanced',random_state=42))
-])
+    # Model Training without duplicate class weighting
+    model = LogisticRegression(class_weight="balanced")
+    model.fit(x_train_resampled, y_train_resampled)
 
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-cv_scores = cross_val_score(cv_pipeline, x, y, cv=skf, scoring="accuracy")
+    # 4. Correct Out-of-Fold Cross Validation
+    cv_pipeline = ImbPipeline([
+        ('scaler', MinMaxScaler()),
+        ('smote', SMOTE(random_state=42)),
+        ('model', LogisticRegression(class_weight='balanced',random_state=42))
+    ])
 
-# 5. Model Evaluation (FIXED: y_true first, then y_pred)
-preds = model.predict(test_x_scaled)
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = cross_val_score(cv_pipeline, x, y, cv=skf, scoring="accuracy")
+
+    preds = model.predict(test_x_scaled)
+
+    acc = accuracy_score(preds , test_y)
+    CM = confusion_matrix(preds , test_y)
+    CR = classification_report(preds , test_y)
+
+    return model , scaler , acc , CM, CR , cv_scores
+
+model , scaler , acc , confusion_matrix , lassification_report , CVS = load_eval_model()
+
+# 5. Model Evaluation 
 
 st.subheader("===== Model Clarifications ======")
 
-st.write(f"Cross validation score : {np.round(cv_scores * 100, 2)}")
+st.write(f"Cross validation score : {np.round(CVS * 100, 2)}")
 
 st.write("Confusion Matrix:")
-st.code(confusion_matrix(test_y, preds))  # FIXED ORDER
+st.code(confusion_matrix)  # FIXED ORDER
 
-report = classification_report(test_y, preds)  # FIXED ORDER
+report = classification_report  # FIXED ORDER
 st.write("Classification Report:")
 st.code(report)
 
-acc = accuracy_score(test_y, preds) * 100  # FIXED ORDER
+acc = acc * 100  # FIXED ORDER
 st.write(f"Accuracy : {acc:.2f}%")
 
 # 6. Form Interface
